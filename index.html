@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiszki - Święci i Atrybuty (z kategoriami)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
+            cursor: pointer;
+            background-color: white;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        button.secondary:hover {
+            background-color: #545b62;
+        }
+
+        .scene {
+            width: 100%;
+            max-width: 500px;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 15px;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            background-color: white;
+            text-align: center;
+        }
+
+        .card-face.front {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #333;
+            border: 2px solid #007bff;
+        }
+
+        .card-face.back {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .category-badge {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .main-text {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .sub-text {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .counter {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .hint {
+            font-size: 12px;
+            color: inherit;
+            opacity: 0.6;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Fiszki Ikonograficzne</h1>
+
+    <div class="filter-container">
+        <label for="categoryFilter" style="display:block; margin-bottom: 5px; font-weight: bold; color: #555;">Wybierz zakres nauki:</label>
+        <select id="categoryFilter" onchange="filterDeck()">
+            <option value="all">Wszyscy święci (Cała baza)</option>
+            <option value="apostolowie">1. Dwunastu Apostołów (+ Św. Paweł)</option>
+            <option value="biblijne">2. Postacie Biblijne i Ewangeliści</option>
+            <option value="ojcowie">3. Ojcowie Kościoła</option>
+            <option value="wspomozyciele">4. Czternastu Wspomożycieli</option>
+            <option value="meczennicy">5. Męczennicy i Męczennice (pozostali)</option>
+            <option value="zakonnicy">6. Zakonnicy i Założyciele</option>
+            <option value="biskupi">7. Biskupi i Patroni Polski</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevCard()" class="secondary">Poprzednia</button>
+        <button onclick="toggleMode()" id="modeBtn" style="background-color: #28a745;">Tryb: Imię -> Atrybut</button>
+        <button onclick="shuffleDeck()" style="background-color: #ffc107; color: black;">Pomieszaj</button>
+        <button onclick="nextCard()" class="secondary">Następna</button>
+    </div>
+
+    <div class="scene scene--card" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face front">
+                <div class="category-badge" id="front-category">Kategoria</div>
+                <div class="main-text" id="front-text">Ładowanie...</div>
+                <div class="hint">(kliknij, aby obrócić)</div>
+            </div>
+            <div class="card-face back">
+                <div class="category-badge" style="background-color: rgba(255,255,255,0.2); color: white;">Odpowiedź</div>
+                <div class="main-text" id="back-text">Ładowanie...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="counter" id="counter">0 / 0</div>
+
+<script>
+    // Baza danych z przypisanymi grupami (group_id) do filtrowania
+    const database = [
+        // APOSTOŁOWIE
+        { name: "Św. Piotr", attr: "1 lub 2 klucze", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Andrzej", attr: "Ukośny krzyż", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Jakub Starszy", attr: "Strój pielgrzymi, kapelusz z muszlą", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Jan Ewangelista", attr: "Bez brody, kielich z wężem", label: "Apostoł / Ewangelista", group: "apostolowie" },
+        { name: "Św. Bartłomiej", attr: "Zdarta skóra, nóż, broda Rumcajsa", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Jakub Młodszy", attr: "Proporzec, kij foluszniczy", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Filip", attr: "Krzyż w kształcie T (Antoniego)", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Tomasz", attr: "Kątownik, włócznia", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Mateusz", attr: "Kątownik, topór, halabarda", label: "Apostoł / Ewangelista", group: "apostolowie" },
+        { name: "Św. Szymon", attr: "Piła", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Juda Tadeusz", attr: "Maczuga, kamienie", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Maciej", attr: "Topór", label: "Apostoł (za Judasza)", group: "apostolowie" },
+        { name: "Św. Paweł", attr: "Miecz", label: "Apostoł Narodów", group: "apostolowie" },
+
+        // BIBLIJNE / EWANGELIŚCI
+        { name: "Św. Jan Chrzciciel", attr: "W skórze, baranek, głowa na misie", label: "Prorok / Poprzednik", group: "biblijne" },
+        { name: "Św. Maria Magdalena", attr: "Pojemniczek na perfumy, rozpuszczone włosy", label: "Uczennica Pańska", group: "biblijne" },
+        { name: "Michał Archanioł", attr: "Skrzydlaty, ze smokiem, waga, zbroja", label: "Archanioł", group: "biblijne" },
+        { name: "Symbol św. Mateusza", attr: "Człowiek (Anioł)", label: "Ewangelista", group: "biblijne" },
+        { name: "Symbol św. Marka", attr: "Lew", label: "Ewangelista", group: "biblijne" },
+        { name: "Symbol św. Łukasza", attr: "Wół", label: "Ewangelista", group: "biblijne" },
+        { name: "Symbol św. Jana", attr: "Orzeł", label: "Ewangelista", group: "biblijne" },
+
+        // OJCOWIE KOŚCIOŁA
+        { name: "Św. Ambroży", attr: "Biskup (często z ulem lub biczem)", label: "Ojciec Kościoła", group: "ojcowie" },
+        { name: "Św. Grzegorz Wielki", attr: "Papież z hostią, gołębica przy uchu", label: "Ojciec Kościoła", group: "ojcowie" },
+        { name: "Św. Augustyn", attr: "Biskup, aniołek szepcze do ucha, serce", label: "Ojciec Kościoła", group: "ojcowie" },
+        { name: "Św. Hieronim", attr: "Kapelusz kardynalski, księga, lew", label: "Ojciec Kościoła", group: "ojcowie" },
+
+        // WSPOMOŻYCIELE (14 Świętych Wspomożycieli)
+        { name: "Św. Jerzy", attr: "Smok, rycerz na koniu", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
+        { name: "Św. Błażej", attr: "Skrzyżowane świece", label: "Wspomożyciel / Biskup", group: "wspomozyciele" },
+        { name: "Św. Erazm", attr: "Powój z kiszkami", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
+        { name: "Św. Pantaleon", attr: "Gwoździe lub ręce przygwożdżone do głowy", label: "Wspomożyciel / Lekarz", group: "wspomozyciele" },
+        { name: "Św. Wit", attr: "Kogut, kocioł", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
+        { name: "Św. Krzysztof", attr: "Dziecię Jezus na barkach", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Dionizy", attr: "Ucięta głowa w rękach", label: "Wspomożyciel / Biskup", group: "wspomozyciele" },
+        { name: "Św. Cyriak", attr: "Diabeł (uwiązany)", label: "Wspomożyciel / Diakon", group: "wspomozyciele" },
+        { name: "Św. Achacy", attr: "Gałąź cierniowa", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Eustachy", attr: "Jeleń z krzyżem w porożu", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Idzi", attr: "Łania", label: "Wspomożyciel / Opat", group: "wspomozyciele" },
+        { name: "Św. Małgorzata", attr: "Smok na łańcuchu", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
+        { name: "Św. Barbara", attr: "Wieża, kielich i hostia", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
+        { name: "Św. Katarzyna Aleksandryjska", attr: "Miecz i koło", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
+
+        // MĘCZENNICY I INNE KOBIETY
+        { name: "Św. Agata", attr: "Piersi na tacy lub w szczypcach", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Agnieszka", attr: "Baranek, 2 korony", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Łucja", attr: "Oczy na talerzu, miecz, szyja przeszyta", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Apolonia", attr: "Szczypce z zębem", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Dorota", attr: "Koszyczek z kwiatami/jabłkami", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Urszula", attr: "Strzały, płaszcz ochronny", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Sebastian", attr: "Strzały (przywiązany do drzewa)", label: "Męczennik", group: "meczennicy" },
+        { name: "Św. Wawrzyniec", attr: "Krata (ruszt), dalmatyka", label: "Diakon / Męczennik", group: "meczennicy" },
+        { name: "Św. Wincenty", attr: "Strój diakona, kruk, kamień młyński", label: "Diakon / Męczennik", group: "meczennicy" },
+        { name: "Św. Szczepan", attr: "Kamienie", label: "Pierwszy Męczennik", group: "meczennicy" },
+        { name: "Św. Maurycy", attr: "Czarnoskóry rycerz", label: "Męczennik", group: "meczennicy" },
+        { name: "Św. Cecylia", attr: "Organy (instrumenty)", label: "Męczennica", group: "meczennicy" },
+
+        // ZAKONNICY
+        { name: "Św. Antoni Pustelnik", attr: "Szaty mnicha, krzyż T, świnka", label: "Opat / Pustelnik", group: "zakonnicy" },
+        { name: "Św. Franciszek z Asyżu", attr: "Stygmaty, ptaki, brązowy habit", label: "Franciszkanin", group: "zakonnicy" },
+        { name: "Św. Antoni Padewski", attr: "Dzieciątko Jezus, lilia", label: "Franciszkanin", group: "zakonnicy" },
+        { name: "Św. Klara", attr: "Monstrancja", label: "Klaryska", group: "zakonnicy" },
+        { name: "Św. Dominik", attr: "Pies z pochodnią, lilia, różaniec", label: "Dominikanin", group: "zakonnicy" },
+        { name: "Św. Tomasz z Akwinu", attr: "Słońce na piersiach, księga, kościół", label: "Dominikanin", group: "zakonnicy" },
+        { name: "Św. Katarzyna Sieneńska", attr: "Dominikanka z koroną cierniową", label: "Dominikanka", group: "zakonnicy" },
+        { name: "Św. Kajetan", attr: "Klęczy przed Dzieciątkiem", label: "Zakonnik", group: "zakonnicy" },
+        { name: "Św. Ryta", attr: "Cierń na czole, figa, pszczoły", label: "Augustianka", group: "zakonnicy" },
+        { name: "Św. Scholastyka", attr: "Gołąb na księdze", label: "Benedyktynka", group: "zakonnicy" },
+        { name: "Św. Jan Nepomucen", attr: "5 gwiazd, komża, stuła, język", label: "Ksiądz", group: "zakonnicy" },
+
+        // BISKUPI / PATRONI
+        { name: "Św. Mikołaj", attr: "Trzy złote kule, strój biskupa", label: "Biskup", group: "biskupi" },
+        { name: "Św. Stanisław", attr: "Biskup, wskrzeszony Piotrowin", label: "Patron Polski", group: "biskupi" },
+        { name: "Św. Wojciech", attr: "Biskup, wiosło, pastorał", label: "Patron Polski", group: "biskupi" },
+        { name: "Św. Marcin", attr: "Na koniu, dzieli płaszcz z żebrakiem", label: "Biskup / Żołnierz", group: "biskupi" },
+        { name: "Św. Roch", attr: "Pies z chlebem, rana na nodze", label: "Pielgrzym", group: "biskupi" },
+        { name: "Św. Florian", attr: "Oficer gaszący pożar wodą", label: "Żołnierz", group: "biskupi" },
+        { name: "Św. Jadwiga Śląska", attr: "Trzyma kościół, buty w ręce", label: "Księżna", group: "biskupi" },
+        { name: "Św. Elżbieta z Turyngii", attr: "Korona, żebrak, róże", label: "Księżna", group: "biskupi" },
+        { name: "Św. Norbert", attr: "Różaniec, jabłko królewskie", label: "Biskup", group: "biskupi" },
+        { name: "Św. Eligiusz", attr: "Młoteczek cyzelatorski", label: "Biskup / Złotnik", group: "biskupi" }
+    ];
+
+    let currentDeck = [];
+    let currentIndex = 0;
+    let mode = "nameToAttr"; // 'nameToAttr' lub 'attrToName'
+
+    // Elementy DOM
+    const cardElement = document.getElementById('card');
+    const frontText = document.getElementById('front-text');
+    const backText = document.getElementById('back-text');
+    const frontCat = document.getElementById('front-category');
+    const counter = document.getElementById('counter');
+    const modeBtn = document.getElementById('modeBtn');
+    const filterSelect = document.getElementById('categoryFilter');
+
+    function filterDeck() {
+        const selectedGroup = filterSelect.value;
+        
+        if (selectedGroup === "all") {
+            currentDeck = [...database];
+        } else {
+            currentDeck = database.filter(item => item.group === selectedGroup);
+        }
+
+        // Zawsze mieszaj po zmianie kategorii
+        shuffleDeck();
+    }
+
+    function updateCard() {
+        if (currentDeck.length === 0) {
+            frontText.innerText = "Brak kart w tej kategorii";
+            backText.innerText = "";
+            frontCat.innerText = "";
+            counter.innerText = "0 / 0";
+            return;
+        }
+
+        const item = currentDeck[currentIndex];
+        
+        cardElement.classList.remove('is-flipped');
+
+        setTimeout(() => {
+            if (mode === "nameToAttr") {
+                frontText.innerText = item.name;
+                backText.innerText = item.attr;
+            } else {
+                frontText.innerText = item.attr;
+                backText.innerText = item.name;
+            }
+            frontCat.innerText = item.label; // Pokazuje etykietę (np. "Apostoł")
+            counter.innerText = `${currentIndex + 1} / ${currentDeck.length}`;
+        }, 200);
+    }
+
+    function flipCard() {
+        if (currentDeck.length > 0) {
+            cardElement.classList.toggle('is-flipped');
+        }
+    }
+
+    function nextCard() {
+        if (currentDeck.length === 0) return;
+        if (currentIndex < currentDeck.length - 1) {
+            currentIndex++;
+        } else {
+            currentIndex = 0; // Zapętlenie
+        }
+        updateCard();
+    }
+
+    function prevCard() {
+        if (currentDeck.length === 0) return;
+        if (currentIndex > 0) {
+            currentIndex--;
+        } else {
+            currentIndex = currentDeck.length - 1;
+        }
+        updateCard();
+    }
+
+    function shuffleDeck() {
+        for (let i = currentDeck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
+        }
+        currentIndex = 0;
+        cardElement.classList.remove('is-flipped');
+        updateCard();
+    }
+
+    function toggleMode() {
+        mode = mode === "nameToAttr" ? "attrToName" : "nameToAttr";
+        modeBtn.innerText = mode === "nameToAttr" ? "Tryb: Imię -> Atrybut" : "Tryb: Atrybut -> Imię";
+        modeBtn.style.backgroundColor = mode === "nameToAttr" ? "#28a745" : "#17a2b8";
+        
+        cardElement.classList.remove('is-flipped');
+        updateCard();
+    }
+
+    // Obsługa klawiatury
+    document.addEventListener('keydown', (e) => {
+        if (e.code === "Space" || e.code === "Enter") {
+            e.preventDefault(); // Zapobiega przewijaniu strony spacją
+            flipCard();
+        }
+        if (e.code === "ArrowRight") nextCard();
+        if (e.code === "ArrowLeft") prevCard();
+    });
+
+    // Start
+    filterDeck(); // Inicjalizuje deck na podstawie domyślnego selecta (all)
+
+</script>
+
+</body>
+</html>
