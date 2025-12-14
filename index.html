@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fiszki - Święci i Atrybuty (z kategoriami)</title>
+    <title>Egzamin Świętych</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,203 +11,257 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            text-align: center;
-        }
+        h1 { color: #333; margin-bottom: 10px; text-align: center; }
 
-        .filter-container {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        select {
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            width: 100%;
-            max-width: 300px;
-            cursor: pointer;
-            background-color: white;
-        }
-
-        .controls {
-            margin-bottom: 20px;
+        /* --- Nawigacja (Zakładki) --- */
+        .nav-tabs {
             display: flex;
             gap: 10px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
         }
 
-        button {
+        .nav-btn {
             padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
             border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button.secondary {
-            background-color: #6c757d;
-        }
-
-        button.secondary:hover {
-            background-color: #545b62;
-        }
-
-        .scene {
-            width: 100%;
-            max-width: 500px;
-            height: 320px;
-            perspective: 1000px;
-            cursor: pointer;
-        }
-
-        .card {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            border-radius: 15px;
-        }
-
-        .card.is-flipped {
-            transform: rotateY(180deg);
-        }
-
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-            border-radius: 15px;
-            background-color: white;
-            text-align: center;
-        }
-
-        .card-face.front {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            color: #333;
-            border: 2px solid #007bff;
-        }
-
-        .card-face.back {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            transform: rotateY(180deg);
-        }
-
-        .category-badge {
             background-color: #e9ecef;
             color: #495057;
-            padding: 5px 10px;
+            cursor: pointer;
             border-radius: 20px;
-            font-size: 12px;
             font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
+            transition: 0.3s;
         }
 
-        .main-text {
-            font-size: 26px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .sub-text {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .counter {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #666;
+        .nav-btn.active {
+            background-color: #dc3545; /* Czerwony dla hardcore */
+            color: white;
+            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.3);
         }
         
-        .hint {
-            font-size: 12px;
-            color: inherit;
-            opacity: 0.6;
-            margin-top: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Styl dla pierwszych trzech przycisków (niebieski) */
+        .nav-btn:not(:last-child).active {
+            background-color: #007bff;
+            box-shadow: 0 4px 6px rgba(0,123,255,0.3);
+        }
+
+        /* --- Kontenery Główne --- */
+        .view-section {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .view-section.active-view {
+            display: flex;
+        }
+
+        /* --- Style wspólne --- */
+        .filter-container { margin-bottom: 20px; text-align: center; width: 100%; }
+        select.main-select { padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; width: 100%; max-width: 300px; }
+        
+        .scene { width: 100%; max-width: 500px; height: 320px; perspective: 1000px; cursor: pointer; margin-bottom: 20px; }
+        .card { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 15px; }
+        .card.is-flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; border-radius: 15px; background-color: white; text-align: center; }
+        .card-face.front { background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); color: #333; border: 2px solid #007bff; }
+        .card-face.back { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; transform: rotateY(180deg); }
+        .main-text { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .hint { font-size: 12px; opacity: 0.6; margin-top: 20px; text-transform: uppercase; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        
+        /* --- Style dla Quizów --- */
+        .quiz-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            text-align: center;
+        }
+        .quiz-question { font-size: 22px; margin-bottom: 25px; font-weight: bold; color: #333; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .option-btn { padding: 15px; border: 2px solid #e9ecef; background: #fff; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.2s; text-align: left; }
+        .option-btn:hover { background-color: #f8f9fa; border-color: #ced4da; }
+        .option-btn.correct { background-color: #d4edda; border-color: #28a745; color: #155724; }
+        .option-btn.wrong { background-color: #f8d7da; border-color: #dc3545; color: #721c24; }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 2px solid #ccc; border-radius: 5px; }
+        .check-btn { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .feedback-msg { margin-top: 15px; font-weight: bold; min-height: 24px; }
+        .feedback-msg.success { color: #28a745; }
+        .feedback-msg.error { color: #dc3545; }
+        .next-q-btn { margin-top: 20px; padding: 10px 30px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; }
+        .score-board { margin-top: 20px; font-size: 18px; color: #666; }
+        .category-badge { background-color: #e9ecef; color: #495057; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+
+        /* --- Style dla EGZAMINU PISEMNEGO (NOWOŚĆ) --- */
+        .match-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        
+        .match-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Atrybut | Input */
+            gap: 15px;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .match-attr { font-weight: bold; font-size: 16px; color: #333; }
+        
+        .match-input {
+            padding: 10px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            width: 100%;
+            background-color: white;
+            font-size: 15px;
+            box-sizing: border-box; /* Ważne żeby input nie wystawał */
+        }
+
+        .match-input.correct { border-color: #28a745; background-color: #d4edda; }
+        .match-input.wrong { border-color: #dc3545; background-color: #f8d7da; }
+
+        .correct-answer-text {
+            display: none;
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .match-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            .match-input { margin-top: 5px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Fiszki Ikonograficzne</h1>
+    <h1>Nauka Świętych</h1>
 
     <div class="filter-container">
-        <label for="categoryFilter" style="display:block; margin-bottom: 5px; font-weight: bold; color: #555;">Wybierz zakres nauki:</label>
-        <select id="categoryFilter" onchange="filterDeck()">
-            <option value="all">Wszyscy święci (Cała baza)</option>
-            <option value="apostolowie">1. Dwunastu Apostołów (+ Św. Paweł)</option>
+        <label for="categoryFilter" style="display:block; margin-bottom: 5px; font-weight: bold; color: #555;">Wybierz zakres:</label>
+        <select id="categoryFilter" class="main-select" onchange="changeCategory()">
+            <option value="apostolowie">1. Dwunastu Apostołów (Start)</option>
             <option value="biblijne">2. Postacie Biblijne i Ewangeliści</option>
             <option value="ojcowie">3. Ojcowie Kościoła</option>
             <option value="wspomozyciele">4. Czternastu Wspomożycieli</option>
-            <option value="meczennicy">5. Męczennicy i Męczennice (pozostali)</option>
+            <option value="meczennicy">5. Męczennicy i Męczennice</option>
             <option value="zakonnicy">6. Zakonnicy i Założyciele</option>
             <option value="biskupi">7. Biskupi i Patroni Polski</option>
+            <option value="all">Wszyscy święci (Cała baza)</option>
         </select>
     </div>
 
-    <div class="controls">
-        <button onclick="prevCard()" class="secondary">Poprzednia</button>
-        <button onclick="toggleMode()" id="modeBtn" style="background-color: #28a745;">Tryb: Imię -> Atrybut</button>
-        <button onclick="shuffleDeck()" style="background-color: #ffc107; color: black;">Pomieszaj</button>
-        <button onclick="nextCard()" class="secondary">Następna</button>
+    <!-- Zakładki -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchView('fiszki')">1. Fiszki</button>
+        <button class="nav-btn" onclick="switchView('quiz-select')">2. Quiz: Wybierz Atrybut</button>
+        <button class="nav-btn" onclick="switchView('quiz-type')">3. Quiz: Wpisz Imię</button>
+        <button class="nav-btn" onclick="switchView('test-write')">4. Egzamin Pisemny</button>
     </div>
 
-    <div class="scene scene--card" onclick="flipCard()">
-        <div class="card" id="card">
-            <div class="card-face front">
-                <div class="category-badge" id="front-category">Kategoria</div>
-                <div class="main-text" id="front-text">Ładowanie...</div>
-                <div class="hint">(kliknij, aby obrócić)</div>
+    <!-- WIDOK 1: FISZKI -->
+    <div id="view-fiszki" class="view-section active-view">
+        <div class="controls">
+            <button onclick="toggleMode()" id="modeBtn" style="background-color: #28a745;">Tryb: Imię -> Atrybut</button>
+        </div>
+        <div class="scene scene--card" onclick="flipCard()">
+            <div class="card" id="card">
+                <div class="card-face front">
+                    <div class="category-badge" id="front-category">Kategoria</div>
+                    <div class="main-text" id="front-text">Ładowanie...</div>
+                    <div class="hint">(kliknij, aby obrócić)</div>
+                </div>
+                <div class="card-face back">
+                    <div class="category-badge" style="background-color: rgba(255,255,255,0.2); color: white;">Odpowiedź</div>
+                    <div class="main-text" id="back-text">Ładowanie...</div>
+                </div>
             </div>
-            <div class="card-face back">
-                <div class="category-badge" style="background-color: rgba(255,255,255,0.2); color: white;">Odpowiedź</div>
-                <div class="main-text" id="back-text">Ładowanie...</div>
+        </div>
+        <div class="controls">
+            <button onclick="prevCard()" class="secondary">Poprzednia</button>
+            <button onclick="shuffleDeck(currentDeck); currentIndex=0; updateCard();" style="background-color: #ffc107; color: black;">Pomieszaj</button>
+            <button onclick="nextCard()" class="secondary">Następna</button>
+        </div>
+        <div style="margin-top: 10px; color: #666;" id="fiszki-counter">0 / 0</div>
+    </div>
+
+    <!-- WIDOK 2: QUIZ WYBORU -->
+    <div id="view-quiz-select" class="view-section">
+        <div class="quiz-card">
+            <div class="category-badge" id="qs-cat">Kategoria</div>
+            <div class="quiz-question" id="qs-question">Pytanie...</div>
+            <div class="options-grid" id="qs-options"></div>
+            <div class="feedback-msg" id="qs-feedback"></div>
+            <button class="next-q-btn" id="qs-next" onclick="nextQuizQuestion('select')">Następne pytanie</button>
+        </div>
+        <div class="score-board">Wynik: <span id="qs-score">0</span></div>
+    </div>
+
+    <!-- WIDOK 3: QUIZ PISANIA (pojedynczy) -->
+    <div id="view-quiz-type" class="view-section">
+        <div class="quiz-card">
+            <div class="category-badge" id="qt-cat">Kategoria</div>
+            <div class="quiz-question" id="qt-question">Pytanie...</div>
+            <p style="margin-top: -15px; margin-bottom: 20px; font-size: 14px; color: #666;">Kto ma taki atrybut?</p>
+            <div class="input-group">
+                <input type="text" id="qt-input" placeholder="Wpisz imię..." autocomplete="off">
+                <button class="check-btn" onclick="checkTypeAnswer()">Sprawdź</button>
             </div>
+            <div class="feedback-msg" id="qt-feedback"></div>
+            <button class="next-q-btn" id="qt-next" onclick="nextQuizQuestion('type')">Następne pytanie</button>
+        </div>
+        <div class="score-board">Wynik: <span id="qt-score">0</span></div>
+    </div>
+
+    <!-- WIDOK 4: EGZAMIN PISEMNY (LISTA) -->
+    <div id="view-test-write" class="view-section">
+        <div class="quiz-card" style="max-width: 900px;">
+            <h2 style="color: #dc3545;">Egzamin Pisemny</h2>
+            <p style="color:#666; margin-bottom:20px;">Wpisz imię świętego, który posiada dany atrybut. Wielkość liter nie ma znaczenia.</p>
+            
+            <div id="write-container" class="match-list">
+                <!-- Tu wygenerują się wiersze -->
+            </div>
+
+            <button class="check-btn" onclick="checkWriteTest()" style="width: 100%; font-size: 18px; margin-bottom: 10px;">Sprawdź odpowiedzi</button>
+            <button class="secondary" onclick="renderWriteTest()" style="width: 100%;">Nowy test (Zresetuj)</button>
+            
+            <div class="score-board" id="write-score"></div>
         </div>
     </div>
 
-    <div class="counter" id="counter">0 / 0</div>
-
 <script>
-    // Baza danych z przypisanymi grupami (group_id) do filtrowania
+    // --- DANE ---
     const database = [
         // APOSTOŁOWIE
         { name: "Św. Piotr", attr: "1 lub 2 klucze", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Andrzej", attr: "Ukośny krzyż", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Jakub Starszy", attr: "Strój pielgrzymi, kapelusz z muszlą", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Jan Ewangelista", attr: "Bez brody, kielich z wężem", label: "Apostoł / Ewangelista", group: "apostolowie" },
-        { name: "Św. Bartłomiej", attr: "Zdarta skóra, nóż, broda Rumcajsa", label: "Apostoł", group: "apostolowie" },
+        { name: "Św. Bartłomiej", attr: "Zdarta skóra, nóż", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Jakub Młodszy", attr: "Proporzec, kij foluszniczy", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Filip", attr: "Krzyż w kształcie T (Antoniego)", label: "Apostoł", group: "apostolowie" },
         { name: "Św. Tomasz", attr: "Kątownik, włócznia", label: "Apostoł", group: "apostolowie" },
@@ -217,53 +271,52 @@
         { name: "Św. Maciej", attr: "Topór", label: "Apostoł (za Judasza)", group: "apostolowie" },
         { name: "Św. Paweł", attr: "Miecz", label: "Apostoł Narodów", group: "apostolowie" },
 
-        // BIBLIJNE / EWANGELIŚCI
-        { name: "Św. Jan Chrzciciel", attr: "W skórze, baranek, głowa na misie", label: "Prorok / Poprzednik", group: "biblijne" },
-        { name: "Św. Maria Magdalena", attr: "Pojemniczek na perfumy, rozpuszczone włosy", label: "Uczennica Pańska", group: "biblijne" },
+        // BIBLIJNE
+        { name: "Św. Jan Chrzciciel", attr: "W skórze, baranek, głowa na misie", label: "Prorok", group: "biblijne" },
+        { name: "Św. Maria Magdalena", attr: "Pojemniczek na perfumy, włosy", label: "Uczennica", group: "biblijne" },
         { name: "Michał Archanioł", attr: "Skrzydlaty, ze smokiem, waga, zbroja", label: "Archanioł", group: "biblijne" },
         { name: "Symbol św. Mateusza", attr: "Człowiek (Anioł)", label: "Ewangelista", group: "biblijne" },
         { name: "Symbol św. Marka", attr: "Lew", label: "Ewangelista", group: "biblijne" },
         { name: "Symbol św. Łukasza", attr: "Wół", label: "Ewangelista", group: "biblijne" },
         { name: "Symbol św. Jana", attr: "Orzeł", label: "Ewangelista", group: "biblijne" },
 
-        // OJCOWIE KOŚCIOŁA
-        { name: "Św. Ambroży", attr: "Biskup (często z ulem lub biczem)", label: "Ojciec Kościoła", group: "ojcowie" },
-        { name: "Św. Grzegorz Wielki", attr: "Papież z hostią, gołębica przy uchu", label: "Ojciec Kościoła", group: "ojcowie" },
+        // OJCOWIE
+        { name: "Św. Ambroży", attr: "Biskup (często z ulem)", label: "Ojciec Kościoła", group: "ojcowie" },
+        { name: "Św. Grzegorz Wielki", attr: "Papież z hostią, gołębica", label: "Ojciec Kościoła", group: "ojcowie" },
         { name: "Św. Augustyn", attr: "Biskup, aniołek szepcze do ucha, serce", label: "Ojciec Kościoła", group: "ojcowie" },
         { name: "Św. Hieronim", attr: "Kapelusz kardynalski, księga, lew", label: "Ojciec Kościoła", group: "ojcowie" },
 
-        // WSPOMOŻYCIELE (14 Świętych Wspomożycieli)
-        { name: "Św. Jerzy", attr: "Smok, rycerz na koniu", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
-        { name: "Św. Błażej", attr: "Skrzyżowane świece", label: "Wspomożyciel / Biskup", group: "wspomozyciele" },
-        { name: "Św. Erazm", attr: "Powój z kiszkami", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
-        { name: "Św. Pantaleon", attr: "Gwoździe lub ręce przygwożdżone do głowy", label: "Wspomożyciel / Lekarz", group: "wspomozyciele" },
-        { name: "Św. Wit", attr: "Kogut, kocioł", label: "Wspomożyciel / Męczennik", group: "wspomozyciele" },
+        // WSPOMOŻYCIELE
+        { name: "Św. Jerzy", attr: "Smok, rycerz na koniu", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Błażej", attr: "Skrzyżowane świece", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Erazm", attr: "Powój z kiszkami", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Pantaleon", attr: "Gwoździe / ręce przygwożdżone do głowy", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Wit", attr: "Kogut, kocioł", label: "Wspomożyciel", group: "wspomozyciele" },
         { name: "Św. Krzysztof", attr: "Dziecię Jezus na barkach", label: "Wspomożyciel", group: "wspomozyciele" },
-        { name: "Św. Dionizy", attr: "Ucięta głowa w rękach", label: "Wspomożyciel / Biskup", group: "wspomozyciele" },
-        { name: "Św. Cyriak", attr: "Diabeł (uwiązany)", label: "Wspomożyciel / Diakon", group: "wspomozyciele" },
+        { name: "Św. Dionizy", attr: "Ucięta głowa w rękach", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Cyriak", attr: "Diabeł (uwiązany)", label: "Wspomożyciel", group: "wspomozyciele" },
         { name: "Św. Achacy", attr: "Gałąź cierniowa", label: "Wspomożyciel", group: "wspomozyciele" },
         { name: "Św. Eustachy", attr: "Jeleń z krzyżem w porożu", label: "Wspomożyciel", group: "wspomozyciele" },
-        { name: "Św. Idzi", attr: "Łania", label: "Wspomożyciel / Opat", group: "wspomozyciele" },
-        { name: "Św. Małgorzata", attr: "Smok na łańcuchu", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
-        { name: "Św. Barbara", attr: "Wieża, kielich i hostia", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
-        { name: "Św. Katarzyna Aleksandryjska", attr: "Miecz i koło", label: "Wspomożycielka / Dziewica", group: "wspomozyciele" },
+        { name: "Św. Idzi", attr: "Łania", label: "Wspomożyciel", group: "wspomozyciele" },
+        { name: "Św. Małgorzata", attr: "Smok na łańcuchu", label: "Wspomożycielka", group: "wspomozyciele" },
+        { name: "Św. Barbara", attr: "Wieża, kielich i hostia", label: "Wspomożycielka", group: "wspomozyciele" },
+        { name: "Św. Katarzyna Aleksandryjska", attr: "Miecz i koło", label: "Wspomożycielka", group: "wspomozyciele" },
 
-        // MĘCZENNICY I INNE KOBIETY
+        // MĘCZENNICY
         { name: "Św. Agata", attr: "Piersi na tacy lub w szczypcach", label: "Męczennica", group: "meczennicy" },
         { name: "Św. Agnieszka", attr: "Baranek, 2 korony", label: "Męczennica", group: "meczennicy" },
-        { name: "Św. Łucja", attr: "Oczy na talerzu, miecz, szyja przeszyta", label: "Męczennica", group: "meczennicy" },
+        { name: "Św. Łucja", attr: "Oczy na talerzu, miecz, szyja", label: "Męczennica", group: "meczennicy" },
         { name: "Św. Apolonia", attr: "Szczypce z zębem", label: "Męczennica", group: "meczennicy" },
         { name: "Św. Dorota", attr: "Koszyczek z kwiatami/jabłkami", label: "Męczennica", group: "meczennicy" },
         { name: "Św. Urszula", attr: "Strzały, płaszcz ochronny", label: "Męczennica", group: "meczennicy" },
         { name: "Św. Sebastian", attr: "Strzały (przywiązany do drzewa)", label: "Męczennik", group: "meczennicy" },
-        { name: "Św. Wawrzyniec", attr: "Krata (ruszt), dalmatyka", label: "Diakon / Męczennik", group: "meczennicy" },
-        { name: "Św. Wincenty", attr: "Strój diakona, kruk, kamień młyński", label: "Diakon / Męczennik", group: "meczennicy" },
-        { name: "Św. Szczepan", attr: "Kamienie", label: "Pierwszy Męczennik", group: "meczennicy" },
+        { name: "Św. Wawrzyniec", attr: "Krata (ruszt), dalmatyka", label: "Męczennik", group: "meczennicy" },
+        { name: "Św. Wincenty", attr: "Strój diakona, kruk, kamień młyński", label: "Męczennik", group: "meczennicy" },
+        { name: "Św. Szczepan", attr: "Kamienie", label: "Męczennik", group: "meczennicy" },
         { name: "Św. Maurycy", attr: "Czarnoskóry rycerz", label: "Męczennik", group: "meczennicy" },
-        { name: "Św. Cecylia", attr: "Organy (instrumenty)", label: "Męczennica", group: "meczennicy" },
 
         // ZAKONNICY
-        { name: "Św. Antoni Pustelnik", attr: "Szaty mnicha, krzyż T, świnka", label: "Opat / Pustelnik", group: "zakonnicy" },
+        { name: "Św. Antoni Pustelnik", attr: "Szaty mnicha, krzyż T, świnka", label: "Pustelnik", group: "zakonnicy" },
         { name: "Św. Franciszek z Asyżu", attr: "Stygmaty, ptaki, brązowy habit", label: "Franciszkanin", group: "zakonnicy" },
         { name: "Św. Antoni Padewski", attr: "Dzieciątko Jezus, lilia", label: "Franciszkanin", group: "zakonnicy" },
         { name: "Św. Klara", attr: "Monstrancja", label: "Klaryska", group: "zakonnicy" },
@@ -274,129 +327,313 @@
         { name: "Św. Ryta", attr: "Cierń na czole, figa, pszczoły", label: "Augustianka", group: "zakonnicy" },
         { name: "Św. Scholastyka", attr: "Gołąb na księdze", label: "Benedyktynka", group: "zakonnicy" },
         { name: "Św. Jan Nepomucen", attr: "5 gwiazd, komża, stuła, język", label: "Ksiądz", group: "zakonnicy" },
+        { name: "Salomea", attr: "Mniszka z monstrancją", label: "Klaryska", group: "zakonnicy" },
+        { name: "Św. Gertruda", attr: "Płaszcz gronostajowy, myszy", label: "Mniszka", group: "zakonnicy" },
 
-        // BISKUPI / PATRONI
+        // BISKUPI
         { name: "Św. Mikołaj", attr: "Trzy złote kule, strój biskupa", label: "Biskup", group: "biskupi" },
         { name: "Św. Stanisław", attr: "Biskup, wskrzeszony Piotrowin", label: "Patron Polski", group: "biskupi" },
         { name: "Św. Wojciech", attr: "Biskup, wiosło, pastorał", label: "Patron Polski", group: "biskupi" },
-        { name: "Św. Marcin", attr: "Na koniu, dzieli płaszcz z żebrakiem", label: "Biskup / Żołnierz", group: "biskupi" },
+        { name: "Św. Marcin", attr: "Na koniu, dzieli płaszcz z żebrakiem", label: "Biskup", group: "biskupi" },
         { name: "Św. Roch", attr: "Pies z chlebem, rana na nodze", label: "Pielgrzym", group: "biskupi" },
         { name: "Św. Florian", attr: "Oficer gaszący pożar wodą", label: "Żołnierz", group: "biskupi" },
         { name: "Św. Jadwiga Śląska", attr: "Trzyma kościół, buty w ręce", label: "Księżna", group: "biskupi" },
         { name: "Św. Elżbieta z Turyngii", attr: "Korona, żebrak, róże", label: "Księżna", group: "biskupi" },
         { name: "Św. Norbert", attr: "Różaniec, jabłko królewskie", label: "Biskup", group: "biskupi" },
-        { name: "Św. Eligiusz", attr: "Młoteczek cyzelatorski", label: "Biskup / Złotnik", group: "biskupi" }
+        { name: "Św. Eligiusz", attr: "Młoteczek cyzelatorski", label: "Biskup", group: "biskupi" },
+        { name: "Św. Otylia", attr: "Oczy na księdze lub sztylet", label: "Święta", group: "biskupi" },
+        { name: "Św. Feliks", attr: "Pająk, pajęczyna", label: "Święty", group: "biskupi" },
+        { name: "Św. Krystyn", attr: "Szewc (narzędzia)", label: "Święty", group: "biskupi" }
     ];
 
     let currentDeck = [];
     let currentIndex = 0;
-    let mode = "nameToAttr"; // 'nameToAttr' lub 'attrToName'
+    let fiszkiMode = "nameToAttr"; 
+    
+    // Quiz Vars
+    let qsCurrentItem = null;
+    let qsScore = 0;
+    let qtCurrentItem = null;
+    let qtScore = 0;
 
-    // Elementy DOM
+    function init() {
+        changeCategory();
+    }
+
+    function changeCategory() {
+        const filterVal = document.getElementById('categoryFilter').value;
+        if (filterVal === "all") {
+            currentDeck = [...database];
+        } else {
+            currentDeck = database.filter(item => item.group === filterVal);
+        }
+        
+        currentIndex = 0;
+        qsScore = 0; document.getElementById('qs-score').innerText = 0;
+        qtScore = 0; document.getElementById('qt-score').innerText = 0;
+
+        shuffleDeck(currentDeck);
+        updateCard(); 
+        nextQuizQuestion('select'); 
+        nextQuizQuestion('type'); 
+        
+        // Zresetuj też test pisemny
+        renderWriteTest();
+    }
+
+    function shuffleDeck(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    }
+
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+        document.getElementById('view-' + viewName).classList.add('active-view');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Map button index
+        const btns = document.querySelectorAll('.nav-btn');
+        if(viewName === 'fiszki') btns[0].classList.add('active');
+        if(viewName === 'quiz-select') btns[1].classList.add('active');
+        if(viewName === 'quiz-type') btns[2].classList.add('active');
+        if(viewName === 'test-write') btns[3].classList.add('active');
+    }
+
+    // --- FISZKI ---
     const cardElement = document.getElementById('card');
     const frontText = document.getElementById('front-text');
     const backText = document.getElementById('back-text');
     const frontCat = document.getElementById('front-category');
-    const counter = document.getElementById('counter');
+    const fCounter = document.getElementById('fiszki-counter');
     const modeBtn = document.getElementById('modeBtn');
-    const filterSelect = document.getElementById('categoryFilter');
-
-    function filterDeck() {
-        const selectedGroup = filterSelect.value;
-        
-        if (selectedGroup === "all") {
-            currentDeck = [...database];
-        } else {
-            currentDeck = database.filter(item => item.group === selectedGroup);
-        }
-
-        // Zawsze mieszaj po zmianie kategorii
-        shuffleDeck();
-    }
 
     function updateCard() {
-        if (currentDeck.length === 0) {
-            frontText.innerText = "Brak kart w tej kategorii";
-            backText.innerText = "";
-            frontCat.innerText = "";
-            counter.innerText = "0 / 0";
-            return;
-        }
-
+        if (currentDeck.length === 0) return;
         const item = currentDeck[currentIndex];
-        
         cardElement.classList.remove('is-flipped');
-
         setTimeout(() => {
-            if (mode === "nameToAttr") {
+            if (fiszkiMode === "nameToAttr") {
                 frontText.innerText = item.name;
                 backText.innerText = item.attr;
             } else {
                 frontText.innerText = item.attr;
                 backText.innerText = item.name;
             }
-            frontCat.innerText = item.label; // Pokazuje etykietę (np. "Apostoł")
-            counter.innerText = `${currentIndex + 1} / ${currentDeck.length}`;
+            frontCat.innerText = item.label;
+            fCounter.innerText = `${currentIndex + 1} / ${currentDeck.length}`;
         }, 200);
     }
-
-    function flipCard() {
-        if (currentDeck.length > 0) {
-            cardElement.classList.toggle('is-flipped');
-        }
-    }
-
-    function nextCard() {
-        if (currentDeck.length === 0) return;
-        if (currentIndex < currentDeck.length - 1) {
-            currentIndex++;
-        } else {
-            currentIndex = 0; // Zapętlenie
-        }
-        updateCard();
-    }
-
-    function prevCard() {
-        if (currentDeck.length === 0) return;
-        if (currentIndex > 0) {
-            currentIndex--;
-        } else {
-            currentIndex = currentDeck.length - 1;
-        }
-        updateCard();
-    }
-
-    function shuffleDeck() {
-        for (let i = currentDeck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [currentDeck[i], currentDeck[j]] = [currentDeck[j], currentDeck[i]];
-        }
-        currentIndex = 0;
-        cardElement.classList.remove('is-flipped');
-        updateCard();
-    }
-
+    function flipCard() { if (currentDeck.length > 0) cardElement.classList.toggle('is-flipped'); }
+    function nextCard() { if (currentDeck.length===0) return; currentIndex = (currentIndex < currentDeck.length - 1) ? currentIndex + 1 : 0; updateCard(); }
+    function prevCard() { if (currentDeck.length===0) return; currentIndex = (currentIndex > 0) ? currentIndex - 1 : currentDeck.length - 1; updateCard(); }
     function toggleMode() {
-        mode = mode === "nameToAttr" ? "attrToName" : "nameToAttr";
-        modeBtn.innerText = mode === "nameToAttr" ? "Tryb: Imię -> Atrybut" : "Tryb: Atrybut -> Imię";
-        modeBtn.style.backgroundColor = mode === "nameToAttr" ? "#28a745" : "#17a2b8";
-        
+        fiszkiMode = fiszkiMode === "nameToAttr" ? "attrToName" : "nameToAttr";
+        modeBtn.innerText = fiszkiMode === "nameToAttr" ? "Tryb: Imię -> Atrybut" : "Tryb: Atrybut -> Imię";
+        modeBtn.style.backgroundColor = fiszkiMode === "nameToAttr" ? "#28a745" : "#17a2b8";
         cardElement.classList.remove('is-flipped');
         updateCard();
     }
 
-    // Obsługa klawiatury
-    document.addEventListener('keydown', (e) => {
-        if (e.code === "Space" || e.code === "Enter") {
-            e.preventDefault(); // Zapobiega przewijaniu strony spacją
-            flipCard();
+    // --- QUIZ FUNCTIONS ---
+    function getRandomItem() {
+        if (currentDeck.length === 0) return null;
+        return currentDeck[Math.floor(Math.random() * currentDeck.length)];
+    }
+    function getDistractors(correctItem) {
+        let distractors = [];
+        let attempts = 0;
+        while (distractors.length < 3 && attempts < 100) {
+            let rand = getRandomItem();
+            if (rand.name !== correctItem.name && !distractors.includes(rand)) {
+                distractors.push(rand);
+            }
+            attempts++;
         }
-        if (e.code === "ArrowRight") nextCard();
-        if (e.code === "ArrowLeft") prevCard();
+        return distractors;
+    }
+    function nextQuizQuestion(type) {
+        if (currentDeck.length === 0) return;
+        if (type === 'select') {
+            qsCurrentItem = getRandomItem();
+            const distractors = getDistractors(qsCurrentItem);
+            let options = [qsCurrentItem, ...distractors];
+            shuffleDeck(options);
+            document.getElementById('qs-cat').innerText = qsCurrentItem.label;
+            document.getElementById('qs-question').innerText = qsCurrentItem.name;
+            document.getElementById('qs-feedback').innerText = "";
+            document.getElementById('qs-feedback').className = "feedback-msg";
+            document.getElementById('qs-next').style.display = "none";
+            const container = document.getElementById('qs-options');
+            container.innerHTML = "";
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt.attr;
+                btn.onclick = () => checkSelectAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+        } else if (type === 'type') {
+            qtCurrentItem = getRandomItem();
+            document.getElementById('qt-cat').innerText = qtCurrentItem.label;
+            document.getElementById('qt-question').innerText = qtCurrentItem.attr;
+            document.getElementById('qt-feedback').innerText = "";
+            document.getElementById('qt-feedback').className = "feedback-msg";
+            document.getElementById('qt-input').value = "";
+            document.getElementById('qt-input').disabled = false;
+            document.getElementById('qt-next').style.display = "none";
+            document.getElementById('qt-input').focus();
+        }
+    }
+    function checkSelectAnswer(selected, btnElement) {
+        const allBtns = document.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.onclick = null);
+        const feedback = document.getElementById('qs-feedback');
+        if (selected.name === qsCurrentItem.name) {
+            btnElement.classList.add('correct');
+            feedback.innerText = "Brawo!";
+            feedback.classList.add('success');
+            qsScore++;
+            document.getElementById('qs-score').innerText = qsScore;
+        } else {
+            btnElement.classList.add('wrong');
+            feedback.innerText = "Źle.";
+            feedback.classList.add('error');
+            allBtns.forEach(b => { if (b.innerText === qsCurrentItem.attr) b.classList.add('correct'); });
+        }
+        document.getElementById('qs-next').style.display = "inline-block";
+    }
+    function checkTypeAnswer() {
+        const input = document.getElementById('qt-input');
+        const feedback = document.getElementById('qt-feedback');
+        const userVal = normalizeString(input.value);
+        const correctVal = normalizeString(qtCurrentItem.name);
+        if (userVal === "") return;
+        input.disabled = true;
+        
+        if (checkAnswerLogic(userVal, correctVal)) {
+            feedback.innerText = "Świetnie!";
+            feedback.classList.add('success');
+            qtScore++;
+            document.getElementById('qt-score').innerText = qtScore;
+        } else {
+            feedback.innerText = `Poprawnie: ${qtCurrentItem.name}`;
+            feedback.classList.add('error');
+        }
+        document.getElementById('qt-next').style.display = "inline-block";
+    }
+    
+    // --- HELPER LOGIC ---
+    function normalizeString(str) { return str.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim().replace(/\s{2,}/g," "); }
+    
+    function checkAnswerLogic(userVal, correctVal) {
+        let cleanCorrect = correctVal.replace('św. ', '').replace('święty ', '').trim();
+        if (userVal === correctVal || userVal === cleanCorrect) return true;
+        // Check if userVal is in cleanCorrect (e.g. "Piotr" in "Św. Piotr")
+        if (cleanCorrect.includes(userVal) && userVal.length > 3) return true;
+        return false;
+    }
+
+    document.getElementById('qt-input').addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            if(document.getElementById('qt-next').style.display === 'none') { checkTypeAnswer(); } 
+            else { nextQuizQuestion('type'); }
+        }
     });
 
+    // --- TEST CAŁOŚCIOWY (WRITE) ---
+    function renderWriteTest() {
+        const container = document.getElementById('write-container');
+        const scoreBoard = document.getElementById('write-score');
+        container.innerHTML = "";
+        scoreBoard.innerText = "";
+        scoreBoard.className = "score-board";
+
+        if (currentDeck.length === 0) {
+            container.innerHTML = "<p>Brak elementów w tej kategorii.</p>";
+            return;
+        }
+
+        // Kopiujemy i mieszamy
+        let questions = [...currentDeck];
+        shuffleDeck(questions);
+
+        questions.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'match-row';
+
+            // Kolumna atrybutu
+            const attrDiv = document.createElement('div');
+            attrDiv.className = 'match-attr';
+            attrDiv.innerText = `${index + 1}. ${item.attr}`;
+            
+            // Kontener na input
+            const inputDiv = document.createElement('div');
+            inputDiv.style.position = 'relative';
+
+            // Input
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'match-input';
+            input.dataset.correct = item.name; // przechowujemy poprawną odp
+            input.placeholder = "Wpisz imię...";
+
+            // Miejsce na poprawną odpowiedź (ukryte)
+            const ansDiv = document.createElement('div');
+            ansDiv.className = 'correct-answer-text';
+            ansDiv.innerText = `Poprawnie: ${item.name}`;
+
+            inputDiv.appendChild(input);
+            inputDiv.appendChild(ansDiv);
+
+            row.appendChild(attrDiv);
+            row.appendChild(inputDiv);
+            container.appendChild(row);
+        });
+    }
+
+    function checkWriteTest() {
+        const inputs = document.querySelectorAll('.match-input');
+        let correctCount = 0;
+        let total = inputs.length;
+
+        inputs.forEach(input => {
+            const userVal = normalizeString(input.value);
+            const correctVal = normalizeString(input.dataset.correct);
+            const row = input.parentElement;
+            const ansText = row.querySelector('.correct-answer-text');
+
+            // Reset
+            input.classList.remove('correct', 'wrong');
+            ansText.style.display = 'none';
+
+            if (checkAnswerLogic(userVal, correctVal)) {
+                input.classList.add('correct');
+                correctCount++;
+            } else {
+                input.classList.add('wrong');
+                ansText.style.display = 'block'; // Pokaż poprawną odpowiedź
+            }
+            input.disabled = true;
+        });
+
+        const scoreBoard = document.getElementById('write-score');
+        const percent = Math.round((correctCount / total) * 100);
+        
+        scoreBoard.innerHTML = `Twój wynik: <b>${correctCount} / ${total}</b> (${percent}%)`;
+        if (percent === 100) {
+            scoreBoard.style.color = "#28a745";
+            scoreBoard.innerHTML += " <br>🎉 IMPONUJĄCE! MISTRZ I KONOGRAFII! 🎉";
+        } else if (percent < 50) {
+            scoreBoard.style.color = "#dc3545";
+        } else {
+            scoreBoard.style.color = "#333";
+        }
+    }
+
     // Start
-    filterDeck(); // Inicjalizuje deck na podstawie domyślnego selecta (all)
+    init();
 
 </script>
 
